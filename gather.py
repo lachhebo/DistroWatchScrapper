@@ -1,9 +1,8 @@
-# Library used 
-
 from bs4 import BeautifulSoup 
 import pandas as pd
 import requests
-
+from datetime import datetime
+from pathlib import Path
 
 req = requests.get('https://distrowatch.com/dwres.php?resource=popularity')
 
@@ -55,7 +54,6 @@ for j in range(1,len(popularity[0].find_all("tr"))):
         popularity_dw[popularity[3].find_all("tr")[j].find_all("td")[0].get_text()]["1_month"] = popularity[3].find_all("tr")[j].find_all("td")[1].get_text()
 
 
-import pandas as pd 
 
 df = pd.DataFrame.from_dict(popularity_dw, orient="index")
 
@@ -65,5 +63,14 @@ df.reset_index(level=0, inplace=True)
 
 df.columns = ['name', '12_months',"6_months","3_months","1_month"]
 
-df.to_csv("Distrowatch_popularity.csv")
+now = datetime.now()
+df['date'] = now
+
+old_df = pd.read_csv('datasets/Distrowatch_popularity.csv',index_col= "Unnamed: 0")
+
+frames = [df, old_df]
+
+result = pd.concat(frames)
+df = result.reset_index(drop=True)
+df.to_csv("datasets/Distrowatch_popularity.csv")
 
